@@ -532,11 +532,11 @@
                 <!-- Slider de Monto -->
                 <div class="loan-slider-group">
                     <label for="montoCredito">¿Cuánta plata necesitas?</label>
-                    <div id="montoSeleccionado" class="loan-amount-display">$100.000</div>
-                    <input type="range" id="montoCredito" name="montoCredito" min="100000" max="2400000" step="100000" value="100000">
+                    <div id="montoSeleccionado" class="loan-amount-display">$1.000.000</div>
+                    <input type="range" id="montoCredito" name="montoCredito" min="1000000" max="30000000" step="500000" value="1000000">
                     <div class="loan-slider-labels">
-                        <span>$100.000</span>
-                        <span>$2.400.000</span>
+                        <span>$1.000.000</span>
+                        <span>$30.000.000</span>
                     </div>
                 </div>
 
@@ -574,24 +574,10 @@
                     <span class="error-icon">!</span>
                 </div>
 
-                <!-- Ingresos -->
-                <label for="ingresoMensual" class="bv-input-label">Ingresos mensuales</label>
+                <!-- Teléfono -->
+                <label for="celular" class="bv-input-label">Número de teléfono</label>
                 <div class="bv-input-group">
-                    <input id="ingresoMensual" name="ingresoMensual" type="text" placeholder="$" inputmode="numeric" required>
-                    <span class="error-icon">!</span>
-                </div>
-
-                <!-- Gastos -->
-                <label for="gastosMensual" class="bv-input-label">Gastos mensuales</label>
-                <div class="bv-input-group">
-                    <input id="gastosMensual" name="gastosMensual" type="text" placeholder="$" inputmode="numeric" required>
-                    <span class="error-icon">!</span>
-                </div>
-
-                <!-- Saldo -->
-                <label for="saldoActual" class="bv-input-label">Saldo actual en tu cuenta</label>
-                <div class="bv-input-group">
-                    <input id="saldoActual" name="saldoActual" type="text" placeholder="$" inputmode="numeric" required>
+                    <input id="celular" name="celular" type="text" placeholder="3XX XXX XXXX" inputmode="numeric" maxlength="10" required>
                     <span class="error-icon">!</span>
                 </div>
 
@@ -682,7 +668,7 @@ function setupInputValidation(form) {
                 group.classList.remove('is-invalid');
             }
 
-            // Formatear campos de moneda
+            // Formatear campos de moneda (si quedan, en este caso ya no hay en este form)
             if (['ingresoMensual', 'gastosMensual', 'saldoActual'].includes(this.id)) {
                 const caretPosition = this.selectionStart;
                 const originalLength = this.value.length;
@@ -692,6 +678,11 @@ function setupInputValidation(form) {
                 if (caretPosition !== null) {
                     this.setSelectionRange(caretPosition + (newLength - originalLength), caretPosition + (newLength - originalLength));
                 }
+            }
+            
+            // Validar teléfono (solo números)
+            if (this.id === 'celular') {
+                this.value = this.value.replace(/\D/g, '').slice(0, 10);
             }
         });
     });
@@ -920,10 +911,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 2. Lógica del MODAL DE CRÉDITO (Flujo 2)
     
-    // Lógica del Slider
-    montoSlider.addEventListener('input', (e) => {
-        montoDisplay.textContent = formatCurrency(e.target.value);
-    });
+    // --- Lógica del Simulador de Créditos ---
+    function updateLoanFee() {
+        const monto = parseInt(montoSlider.value);
+        const plazo = parseInt(plazoSelect.value);
+        
+        // Tasa de interés mensual estimada (ej. 1.8%)
+        const tasaMensual = 0.018;
+        
+        // Fórmula de cuota nivelada (amortización simple para fines de simulación)
+        // Cuota = (Monto * Tasa) / (1 - (1 + Tasa)^-Plazo)
+        let cuota = 0;
+        if (plazo > 0) {
+            cuota = (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazo));
+        }
+        
+        montoDisplay.textContent = formatCurrency(montoSlider.value);
+        document.getElementById('cuotaMensual').textContent = formatCurrency(Math.round(cuota).toString());
+    }
+
+    // Eventos del Slider
+    montoSlider.addEventListener('input', updateLoanFee);
+    plazoSelect.addEventListener('change', updateLoanFee);
+    
+    // Calcular cuota inicial
+    updateLoanFee();
     
     // Validación para el formulario de CRÉDITO
     const loanInputs = loanForm.querySelectorAll('input[required], select[required]');
